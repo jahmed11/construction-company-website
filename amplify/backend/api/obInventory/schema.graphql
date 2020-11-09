@@ -1,0 +1,39 @@
+type Building @model{
+id:ID!
+price:Float!
+description:String
+beds:Int!
+bath:Int!
+garage:Int!
+livingSpace:Float!
+totalSpace:Float!
+status:String!
+floorPlanImage:String!
+frontViewImage:String!
+shortAddress:String
+city:String
+state:String
+zipCode:String
+lng:String!
+lat:String!
+images:[Image]@connection(keyName:"byBuilding",fields:["id"])
+}
+
+
+type Image @model
+@key(name:"byBuilding",fields:["buildingID","image"]){
+id:ID!
+buildingID:ID!
+image:String!
+}
+
+
+type Website @model{
+    id:ID!
+    title:String!
+    email:String!
+    number:String!
+    footerTitle:String!
+    videoUrl:String!
+
+}

@@ -1,0 +1,76 @@
+#set( $limit = $util.defaultIfNull($context.args.limit, 100) )
+#set( $query = {
+  "expression": "#partitionKey = :partitionKey",
+  "expressionNames": {
+      "#partitionKey": "buildingID"
+  },
+  "expressionValues": {
+      ":partitionKey": {
+          "S": "$context.source.id"
+    }
+  }
+} )
+## [Start] Applying Key Condition **
+#if( !$util.isNull($ctx.args.image) && !$util.isNull($ctx.args.image.beginsWith) )
+  #set( $query.expression = "$query.expression AND begins_with(#sortKey, :sortKey)" )
+  $util.qr($query.expressionNames.put("#sortKey", "image"))
+  $util.qr($query.expressionValues.put(":sortKey", { "S": "$ctx.args.image.beginsWith" }))
+#end
+#if( !$util.isNull($ctx.args.image) && !$util.isNull($ctx.args.image.between) )
+  #set( $query.expression = "$query.expression AND #sortKey BETWEEN :sortKey0 AND :sortKey1" )
+  $util.qr($query.expressionNames.put("#sortKey", "image"))
+  $util.qr($query.expressionValues.put(":sortKey0", { "S": "$ctx.args.image.between[0]" }))
+  $util.qr($query.expressionValues.put(":sortKey1", { "S": "$ctx.args.image.between[1]" }))
+#end
+#if( !$util.isNull($ctx.args.image) && !$util.isNull($ctx.args.image.eq) )
+  #set( $query.expression = "$query.expression AND #sortKey = :sortKey" )
+  $util.qr($query.expressionNames.put("#sortKey", "image"))
+  $util.qr($query.expressionValues.put(":sortKey", { "S": "$ctx.args.image.eq" }))
+#end
+#if( !$util.isNull($ctx.args.image) && !$util.isNull($ctx.args.image.lt) )
+  #set( $query.expression = "$query.expression AND #sortKey < :sortKey" )
+  $util.qr($query.expressionNames.put("#sortKey", "image"))
+  $util.qr($query.expressionValues.put(":sortKey", { "S": "$ctx.args.image.lt" }))
+#end
+#if( !$util.isNull($ctx.args.image) && !$util.isNull($ctx.args.image.le) )
+  #set( $query.expression = "$query.expression AND #sortKey <= :sortKey" )
+  $util.qr($query.expressionNames.put("#sortKey", "image"))
+  $util.qr($query.expressionValues.put(":sortKey", { "S": "$ctx.args.image.le" }))
+#end
+#if( !$util.isNull($ctx.args.image) && !$util.isNull($ctx.args.image.gt) )
+  #set( $query.expression = "$query.expression AND #sortKey > :sortKey" )
+  $util.qr($query.expressionNames.put("#sortKey", "image"))
+  $util.qr($query.expressionValues.put(":sortKey", { "S": "$ctx.args.image.gt" }))
+#end
+#if( !$util.isNull($ctx.args.image) && !$util.isNull($ctx.args.image.ge) )
+  #set( $query.expression = "$query.expression AND #sortKey >= :sortKey" )
+  $util.qr($query.expressionNames.put("#sortKey", "image"))
+  $util.qr($query.expressionValues.put(":sortKey", { "S": "$ctx.args.image.ge" }))
+#end
+## [End] Applying Key Condition **
+{
+  "version": "2018-05-29",
+  "operation": "Query",
+  "query":   $util.toJson($query),
+  "scanIndexForward":   #if( $context.args.sortDirection )
+    #if( $context.args.sortDirection == "ASC" )
+true
+    #else
+false
+    #end
+  #else
+true
+  #end,
+  "filter":   #if( $context.args.filter )
+$util.transform.toDynamoDBFilterExpression($ctx.args.filter)
+  #else
+null
+  #end,
+  "limit": $limit,
+  "nextToken":   #if( $context.args.nextToken )
+$util.toJson($context.args.nextToken)
+  #else
+null
+  #end,
+  "index": "byBuilding"
+}
